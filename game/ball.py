@@ -1,35 +1,40 @@
 import pygame
-import random
 
 class Ball:
-    def __init__(self, x, y, width, height, screen_width, screen_height):
-        self.original_x = x
-        self.original_y = y
+    def __init__(self, x, y, velocity_x, velocity_y, screen_width, screen_height, size=15,
+                 sound_wall=None):
         self.x = x
         self.y = y
-        self.width = width
-        self.height = height
+        self.velocity_x = velocity_x
+        self.velocity_y = velocity_y
         self.screen_width = screen_width
         self.screen_height = screen_height
-        self.velocity_x = random.choice([-5, 5])
-        self.velocity_y = random.choice([-3, 3])
+        self.size = size
+        self.sound_wall = sound_wall  # Sound for wall bounce
 
     def move(self):
+        # Move the ball
         self.x += self.velocity_x
         self.y += self.velocity_y
 
-        if self.y <= 0 or self.y + self.height >= self.screen_height:
+        # Top and bottom wall collision
+        if self.y <= 0:
+            self.y = 0
             self.velocity_y *= -1
-
-    def check_collision(self, player, ai):
-        if self.rect().colliderect(player.rect()) or self.rect().colliderect(ai.rect()):
-            self.velocity_x *= -1
-
-    def reset(self):
-        self.x = self.original_x
-        self.y = self.original_y
-        self.velocity_x *= -1
-        self.velocity_y = random.choice([-3, 3])
+            if self.sound_wall:
+                self.sound_wall.play()
+        elif self.y + self.size >= self.screen_height:
+            self.y = self.screen_height - self.size
+            self.velocity_y *= -1
+            if self.sound_wall:
+                self.sound_wall.play()
 
     def rect(self):
-        return pygame.Rect(self.x, self.y, self.width, self.height)
+        return pygame.Rect(self.x, self.y, self.size, self.size)
+
+    def reset(self):
+        # Center the ball and reverse direction randomly
+        self.x = self.screen_width // 2 - self.size // 2
+        self.y = self.screen_height // 2 - self.size // 2
+        self.velocity_x *= -1
+        self.velocity_y *= -1
